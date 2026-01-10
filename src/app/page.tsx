@@ -1,65 +1,67 @@
-import Image from "next/image";
+import Link from "next/link";
+import { demoProfessors } from "@/lib/demoData";
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            Ich liebe socken so sehr, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main style={{ maxWidth: 900, margin: "40px auto", padding: 16 }}>
+      <header
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 12,
+        }}
+      >
+        <div>
+          <h1 style={{ fontSize: 32, fontWeight: 800 }}>campusbuddy</h1>
+          <p style={{ marginTop: 6, opacity: 0.8 }}>
+            Professoren bewerten – MVP (Demo-Daten).
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        <nav style={{ display: "flex", gap: 10 }}>
+          <Link href="/hochschule/demo-uni">Hochschule</Link>
+        </nav>
+      </header>
+
+      <div style={{ marginTop: 24 }}>
+        <input
+          placeholder="Professor suchen…"
+          style={{
+            width: "100%",
+            padding: 12,
+            border: "1px solid #ccc",
+            borderRadius: 8,
+          }}
+        />
+      </div>
+
+      <h2 style={{ marginTop: 28, fontSize: 20, fontWeight: 700 }}>
+        Professoren
+      </h2>
+
+      <ul style={{ marginTop: 12, display: "grid", gap: 10, paddingLeft: 0 }}>
+        {demoProfessors.map((p) => (
+          <li
+            key={p.id}
+            style={{
+              listStyle: "none",
+              border: "1px solid #eee",
+              borderRadius: 10,
+              padding: 14,
+            }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+            <Link
+              href={`/professor/${p.id}`}
+              style={{ fontWeight: 700, textDecoration: "none" }}
+            >
+              {p.name}
+            </Link>
+            <div style={{ fontSize: 14, opacity: 0.7 }}>
+              {p.department} • {p.school}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </main>
   );
 }
