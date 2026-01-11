@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { sessionCookie, verifySession } from "@/lib/auth";
 import UserMenu from "@/app/components/UserMenu";
+import Footer from "@/app/components/Footer";
 
 export const metadata: Metadata = {
   title: "campusbuddy",
@@ -73,7 +74,7 @@ export default async function RootLayout({
                 Discord
               </a>
 
-              {/* ✅ Profil Dropdown / Login Button */}
+              {/* Profil Dropdown / Login Button */}
               <UserMenu email={viewerEmail} />
 
               {/* Mobile Menü ohne JS (Details/summary) */}
@@ -100,6 +101,8 @@ export default async function RootLayout({
         </header>
 
         <div className="mx-auto max-w-6xl px-4">{children}</div>
+
+        <Footer />
       </body>
     </html>
   );
