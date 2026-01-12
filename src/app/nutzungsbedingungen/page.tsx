@@ -2,65 +2,77 @@ import Link from "next/link";
 
 export default function NutzungsbedingungenPage() {
   return (
-    <main className="mx-auto max-w-3xl px-6 py-10">
-      <h1 className="text-3xl font-extrabold">Nutzungsbedingungen</h1>
+    <main className="mx-auto max-w-4xl px-6 py-10">
+      <h1 className="text-4xl font-extrabold tracking-tight">Nutzungsbedingungen</h1>
 
-      <div className="mt-6 space-y-4 text-slate-700">
-        <h2 className="text-xl font-bold">1. Allgemeines</h2>
-        <p>
+      <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+        <h2 className="text-2xl font-bold">1. Allgemeines</h2>
+        <p className="mt-3 text-slate-700">
           Diese Nutzungsbedingungen regeln die Nutzung der Website campusbuddy.
-          Mit der Nutzung unserer Website erklären Sie sich mit diesen Nutzungsbedingungen
-          einverstanden.
+          Mit der Nutzung unserer Website erklären Sie sich mit diesen
+          Nutzungsbedingungen einverstanden.
         </p>
+      </section>
 
-        <h2 className="pt-4 text-xl font-bold">2. Nutzung der Plattform</h2>
-        <p>
-          campusbuddy ist eine Plattform zur Bewertung von Professor:innen und Lehrveranstaltungen.
-          Die Nutzung ist kostenlos und setzt die Einhaltung dieser Nutzungsbedingungen voraus.
+      <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+        <h2 className="text-2xl font-bold">2. Nutzung der Plattform</h2>
+        <p className="mt-3 text-slate-700">
+          campusbuddy ist eine Plattform zur Bewertung von Professor:innen und
+          Lehrveranstaltungen. Die Nutzung ist kostenlos und setzt die Einhaltung
+          dieser Nutzungsbedingungen voraus.
         </p>
+      </section>
 
-        <h2 className="pt-4 text-xl font-bold">3. Verhaltensregeln</h2>
-        <ul className="list-disc space-y-1 pl-6">
-          <li>Keine beleidigenden, diffamierenden oder rechtswidrigen Inhalte veröffentlichen</li>
-          <li>Sachliche und konstruktive Bewertungen abgeben</li>
-          <li>Privatsphäre und Rechte anderer respektieren</li>
-          <li>Keine falschen oder irreführenden Informationen verbreiten</li>
+      <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+        <h2 className="text-2xl font-bold">3. Verhaltensregeln</h2>
+        <p className="mt-3 text-slate-700">Bei der Nutzung verpflichten Sie sich insbesondere:</p>
+        <ul className="mt-4 list-disc space-y-2 pl-5 text-slate-700">
+          <li>Keine beleidigenden, diffamierenden oder rechtswidrigen Inhalte zu veröffentlichen</li>
+          <li>Sachliche und konstruktive Bewertungen abzugeben</li>
+          <li>Die Privatsphäre anderer Nutzer:innen und Lehrpersonen zu respektieren</li>
+          <li>Keine falschen oder irreführenden Informationen zu verbreiten</li>
         </ul>
+      </section>
 
-        <h2 className="pt-4 text-xl font-bold">4. Bewertungen & Moderation</h2>
-        <p>
-          Bewertungen sollten fair, sachlich und konstruktiv sein. Wir behalten uns vor,
-          Inhalte zu moderieren und zu entfernen, wenn sie gegen diese Regeln oder gesetzliche
-          Vorgaben verstoßen.
+      <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+        <h2 className="text-2xl font-bold">4. Bewertungen</h2>
+        <p className="mt-3 text-slate-700">
+          Bewertungen sollten fair, sachlich und konstruktiv sein. Wir behalten uns
+          das Recht vor, Inhalte zu moderieren und gegebenenfalls zu entfernen,
+          wenn sie gegen diese Nutzungsbedingungen oder geltendes Recht verstoßen.
         </p>
+      </section>
 
-        <h2 className="pt-4 text-xl font-bold">5. Haftungsausschluss</h2>
-        <p>
-          Wir übernehmen keine Gewähr für Richtigkeit, Vollständigkeit und Aktualität der
-          bereitgestellten Informationen. Die Nutzung der Plattform erfolgt auf eigenes Risiko.
+      <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+        <h2 className="text-2xl font-bold">5. Haftungsausschluss</h2>
+        <p className="mt-3 text-slate-700">
+          Wir übernehmen keine Gewähr für die Richtigkeit, Vollständigkeit und
+          Aktualität der bereitgestellten Informationen. Die Nutzung der Plattform
+          erfolgt auf eigenes Risiko.
         </p>
+      </section>
 
-        <h2 className="pt-4 text-xl font-bold">6. Änderungen</h2>
-        <p>
-          Wir behalten uns vor, diese Nutzungsbedingungen jederzeit zu ändern. Änderungen werden
-          auf dieser Seite bekannt gegeben.
+      <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+        <h2 className="text-2xl font-bold">6. Änderungen der Nutzungsbedingungen</h2>
+        <p className="mt-3 text-slate-700">
+          Wir behalten uns das Recht vor, diese Nutzungsbedingungen jederzeit zu
+          ändern. Die jeweils aktuelle Version wird auf dieser Seite veröffentlicht.
         </p>
+      </section>
 
-        <h2 className="pt-4 text-xl font-bold">7. Kontakt</h2>
-        <p>E-Mail: kontakt@josaya.de</p>
-      </div>
+      <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+        <h2 className="text-2xl font-bold">7. Kontakt</h2>
+        <p className="mt-3 text-slate-700">
+          Bei Fragen zu diesen Nutzungsbedingungen können Sie uns kontaktieren.
+        </p>
+      </section>
 
-      <Link className="mt-8 inline-block underline" href="/">
-        Zurück zur Startseite
+      <Link
+        href="/"
+        className="mt-10 inline-flex items-center gap-2 text-base font-semibold text-slate-700 hover:text-slate-900"
+      >
+        <span aria-hidden>←</span> Zurück zur Startseite
       </Link>
-      <div className="mt-10 flex justify-center">
-  <Link
-    href="/"
-    className="rounded-2xl bg-blue-600 px-8 py-4 text-base font-semibold text-white shadow-sm hover:bg-blue-700"
-  >
-    Zurück zur Startseite
-  </Link>
-</div>
     </main>
   );
 }

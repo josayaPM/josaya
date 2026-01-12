@@ -13,14 +13,35 @@ export default async function Home({
     where: query
       ? {
           OR: [
-            { name: { contains: query } },
-            { department: { contains: query } },
-            { school: { contains: query } },
+            { name: { contains: query, mode: "insensitive" } },
+            {
+              department: {
+                is: { name: { contains: query, mode: "insensitive" } },
+              },
+            },
+            {
+              department: {
+                is: {
+                  school: {
+                    is: { name: { contains: query, mode: "insensitive" } },
+                  },
+                },
+              },
+            },
           ],
         }
       : undefined,
     orderBy: { name: "asc" },
-    select: { id: true, name: true, department: true, school: true },
+    select: {
+      id: true,
+      name: true,
+      department: {
+        select: {
+          name: true,
+          school: { select: { name: true } },
+        },
+      },
+    },
   });
 
   return (
@@ -109,8 +130,10 @@ export default async function Home({
               >
                 {p.name}
               </Link>
+
               <div className="mt-1 text-sm text-slate-600">
-                {p.department} • {p.school}
+                {p.department.school.name}
+                {p.department.name ? ` • ${p.department.name}` : ""}
               </div>
             </li>
           ))}
