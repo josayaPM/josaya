@@ -1,116 +1,67 @@
-generator client {
-  provider = "prisma-client-js"
-}
-
-datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
-}
-
-model User {
-  id            String         @id @default(cuid())
-  email         String         @unique
-  passwordHash  String
-  createdAt     DateTime       @default(now())
-  ratings       Rating[]
-  notifications Notification[]
-}
-
-model School {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  createdAt DateTime @default(now())
-
-  courses     Course[]
-  departments Department[]
-}
-
-model Professor {
-  id        String   @id @default(cuid())
-  name      String
-  createdAt DateTime @default(now())
-
-  departmentId String
-  department   Department @relation(fields: [departmentId], references: [id])
-
-  courses ProfessorCourse[]
-  ratings Rating[]
-}
-
-model Course {
-  id        String   @id @default(cuid())
-  name      String
-  code      String?
-  createdAt DateTime @default(now())
-
-  // Kurs gehört zu einer Uni/HS
-  schoolId String
-  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-
-  professors ProfessorCourse[]
-  ratings    Rating[]
-
-  @@unique([schoolId, name])
-  @@index([schoolId])
-}
-
-model ProfessorCourse {
-  professorId String
-  courseId    String
-  createdAt   DateTime @default(now())
-
-  professor Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
-  course    Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
-
-  @@id([professorId, courseId])
-  @@index([courseId])
-}
-
-model Rating {
-  id             String    @id @default(cuid())
-  stars          Int
-  comment        String
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime? @updatedAt
-  firstCreatedAt DateTime?
-
-  userId      String
-  professorId String
-  courseId    String
-
-  user      User      @relation(fields: [userId], references: [id])
-  professor Professor @relation(fields: [professorId], references: [id])
-  course    Course    @relation(fields: [courseId], references: [id])
-
-  // ✅ verhindert Spam: pro User pro Kurs (und Prof) nur 1 Rating
-  @@unique([userId, professorId, courseId])
-  @@index([professorId])
-  @@index([courseId])
-  @@index([userId])
-}
-
-model Notification {
-  id     String @id @default(cuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  title String
-  body  String?
-  href  String?
-
-  readAt    DateTime?
-  createdAt DateTime  @default(now())
-
-  @@index([userId, createdAt])
-}
-
-model Department {
-  id       String @id @default(cuid())
-  name     String
-  schoolId String
-  school   School @relation(fields: [schoolId], references: [id])
-
-  professors Professor[]
-
-  @@unique([schoolId, name])
-}
+diff --git a/prisma/schema.prisma b/prisma/schema.prisma
+index deb64ba89be846acf667148834eaf05b6c75ff72..1c3b728a9c913f55710c8da9a184ff35fc5e9a7e 100644
+--- a/prisma/schema.prisma
++++ b/prisma/schema.prisma
+@@ -1,32 +1,32 @@
+ generator client {
+   provider = "prisma-client-js"
+ }
+ 
+ datasource db {
+   provider = "sqlite"
+-  url      = env("DATABASE_URL")
++  url      = "file:./dev.db"
+ }
+ 
+ model User {
+   id           String   @id @default(cuid())
+   email        String   @unique
+   passwordHash String
+   createdAt    DateTime @default(now())
+   ratings      Rating[]
+   notifications Notification[]
+ }
+ 
+ model Professor {
+   id         String   @id @default(cuid())
+   name       String
+   department String
+   school     String
+   createdAt  DateTime @default(now())
+   ratings    Rating[]
+   courses Course[]
+ }
+ 
+ model Rating {
+   id          String   @id @default(cuid())
+   stars       Int
+   comment     String
+@@ -43,26 +43,26 @@ model Rating {
+ }
+ model Notification {
+   id        String   @id @default(cuid())
+   userId    String
+   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+   title     String
+   body      String?
+   href      String?
+ 
+   readAt    DateTime?
+   createdAt DateTime @default(now())
+ 
+   @@index([userId, createdAt])
+ }
+ model Course {
+   id          String   @id @default(cuid())
+   name        String
+   code        String?
+   createdAt   DateTime @default(now())
+ 
+   professorId String
+   professor   Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
+ 
+   @@index([professorId])
+-}
+\ No newline at end of file
++}
