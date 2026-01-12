@@ -1,3 +1,4 @@
+ (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
 diff --git a/prisma.config.ts b/prisma.config.ts
 index 8ded1a58d5249e565046f6e8b57bab1a718d1a74..cb9732d01a2c0aab56dd5df1398a3ec8937e70ba 100644
 --- a/prisma.config.ts
@@ -23,3 +24,6 @@ index 8ded1a58d5249e565046f6e8b57bab1a718d1a74..cb9732d01a2c0aab56dd5df1398a3ec8
 +    url: databaseUrl,
    },
  });
+ 
+EOF
+)
