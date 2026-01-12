@@ -38,7 +38,7 @@ export default async function RootLayout({
 
   return (
     <html lang="de">
-      <body>
+      <body className="min-h-screen bg-white text-slate-900">
         <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur">
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
             <Link
@@ -74,10 +74,8 @@ export default async function RootLayout({
                 Discord
               </a>
 
-              {/* Profil Dropdown / Login Button */}
               <UserMenu email={viewerEmail} />
 
-              {/* Mobile Menü ohne JS (Details/summary) */}
               <details className="md:hidden">
                 <summary className="cursor-pointer list-none rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800">
                   ☰
@@ -87,12 +85,7 @@ export default async function RootLayout({
                     <Link href="/">Home</Link>
                     <Link href="/professoren">Professor:innen</Link>
                     <Link href="/#kontakt">Kontakt</Link>
-                    <a
-                      href="#"
-                      className="inline-flex w-fit rounded-xl bg-blue-600 px-4 py-2 font-semibold text-white"
-                    >
-                      Discord
-                    </a>
+                  
                   </div>
                 </div>
               </details>
@@ -100,8 +93,12 @@ export default async function RootLayout({
           </div>
         </header>
 
-        <div className="mx-auto max-w-6xl px-4">{children}</div>
+        {/* Content */}
+        <div className="mx-auto max-w-6xl px-4">
+          {children}
+        </div>
 
+        {/* Global Footer */}
         <Footer />
       </body>
     </html>

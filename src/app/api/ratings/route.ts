@@ -3,40 +3,67 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { sessionCookie, verifySession } from "@/lib/auth";
 
-export async function POST(req: Request) {
+const MIN_COMMENT = 20;
+
+async function requireUserId() {
   const cookieStore = await cookies();
   const token = cookieStore.get(sessionCookie.name)?.value;
-  if (!token) return NextResponse.json({ error: "Nicht eingeloggt." }, { status: 401 });
-
-  let userId: string;
+  if (!token) return null;
   try {
     const session = await verifySession(token);
-    userId = session.userId;
+    return session.userId as string;
   } catch {
-    return NextResponse.json({ error: "Nicht eingeloggt." }, { status: 401 });
+    return null;
+  }
+}
+
+function jsonError(msg: string, status = 400) {
+  return NextResponse.json({ error: msg }, { status });
+}
+
+export async function POST(req: Request) {
+  const userId = await requireUserId();
+  if (!userId) return jsonError("Nicht eingeloggt.", 401);
+
+  let body: any = null;
+  try {
+    body = await req.json();
+  } catch {
+    return jsonError("Ungültiger JSON-Body.", 400);
   }
 
-  const body = await req.json();
-  const professorId = String(body.professorId ?? "");
-  const stars = Number(body.stars ?? 0);
-  const comment = String(body.comment ?? "").trim();
+  const professorId = String(body?.professorId ?? "").trim();
+  const courseId = String(body?.courseId ?? "").trim();
+  const stars = Number(body?.stars ?? 0);
+  const comment = String(body?.comment ?? "").trim();
 
-  if (!professorId || !Number.isInteger(stars) || stars < 1 || stars > 5 || comment.length < 3) {
-    return NextResponse.json(
-      { error: "Bitte stars (1-5) + Kommentar (mind. 3 Zeichen)." },
-      { status: 400 }
-    );
+  if (!professorId) return jsonError("Fehlende professorId.", 400);
+  if (!courseId) return jsonError("Fehlende courseId.", 400);
+
+  if (!Number.isInteger(stars) || stars < 1 || stars > 5) {
+    return jsonError("Bitte stars (1-5) angeben.", 400);
+  }
+  if (comment.length < MIN_COMMENT) {
+    return jsonError(`Bitte Kommentar (mind. ${MIN_COMMENT} Zeichen) angeben.`, 400);
   }
 
-  const prof = await prisma.professor.findUnique({
-    where: { id: professorId },
-    select: { id: true, name: true },
-  });
-  if (!prof) return NextResponse.json({ error: "Professor nicht gefunden." }, { status: 404 });
-
-  const rating = await prisma.rating.create({
-    data: { professorId, userId, stars, comment },
-    select: { id: true, stars: true, comment: true, createdAt: true },
+  // ✅ Upsert: pro User+Prof+Kurs nur eine Bewertung (Spam-Schutz)
+  const rating = await prisma.rating.upsert({
+    where: {
+      userId_professorId_courseId: { userId, professorId, courseId },
+    },
+    update: { stars, comment },
+    create: { userId, professorId, courseId, stars, comment },
+    select: {
+      id: true,
+      stars: true,
+      comment: true,
+      createdAt: true,
+      updatedAt: true,
+      firstCreatedAt: true,
+      professorId: true,
+      courseId: true,
+    },
   });
 
   return NextResponse.json({ ok: true, rating }, { status: 200 });

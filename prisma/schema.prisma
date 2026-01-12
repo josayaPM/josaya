@@ -8,61 +8,109 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  createdAt    DateTime @default(now())
-  ratings      Rating[]
+  id            String         @id @default(cuid())
+  email         String         @unique
+  passwordHash  String
+  createdAt     DateTime       @default(now())
+  ratings       Rating[]
   notifications Notification[]
 }
 
+model School {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+
+  courses     Course[]
+  departments Department[]
+}
+
 model Professor {
-  id         String   @id @default(cuid())
-  name       String
-  department String
-  school     String
-  createdAt  DateTime @default(now())
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+
+  courses ProfessorCourse[]
+  ratings Rating[]
+}
+
+model Course {
+  id        String   @id @default(cuid())
+  name      String
+  code      String?
+  createdAt DateTime @default(now())
+
+  // Kurs gehört zu einer Uni/HS
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  professors ProfessorCourse[]
   ratings    Rating[]
-  courses Course[]
+
+  @@unique([schoolId, name])
+  @@index([schoolId])
+}
+
+model ProfessorCourse {
+  professorId String
+  courseId    String
+  createdAt   DateTime @default(now())
+
+  professor Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  course    Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@id([professorId, courseId])
+  @@index([courseId])
 }
 
 model Rating {
-  id          String   @id @default(cuid())
-  stars       Int
-  comment     String
-  createdAt   DateTime @default(now())
+  id             String    @id @default(cuid())
+  stars          Int
+  comment        String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime? @updatedAt
+  firstCreatedAt DateTime?
 
   userId      String
   professorId String
+  courseId    String
 
-  user        User      @relation(fields: [userId], references: [id])
-  professor   Professor @relation(fields: [professorId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+  professor Professor @relation(fields: [professorId], references: [id])
+  course    Course    @relation(fields: [courseId], references: [id])
 
+  // ✅ verhindert Spam: pro User pro Kurs (und Prof) nur 1 Rating
+  @@unique([userId, professorId, courseId])
   @@index([professorId])
+  @@index([courseId])
   @@index([userId])
 }
-model Notification {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  title     String
-  body      String?
-  href      String?
+model Notification {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title String
+  body  String?
+  href  String?
 
   readAt    DateTime?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 
   @@index([userId, createdAt])
 }
-model Course {
-  id          String   @id @default(cuid())
-  name        String
-  code        String?
-  createdAt   DateTime @default(now())
 
-  professorId String
-  professor   Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
+model Department {
+  id       String @id @default(cuid())
+  name     String
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id])
 
-  @@index([professorId])
+  professors Professor[]
+
+  @@unique([schoolId, name])
 }
