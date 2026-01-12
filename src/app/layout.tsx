@@ -100,7 +100,59 @@ export default async function RootLayout({
           </div>
         </header>
 
-        <div className="mx-auto max-w-6xl px-4">{children}</div>
+        <div className="mx-auto max-w-6xl px-4 py-6">
+  <div className="grid grid-cols-12 gap-6">
+    {/* LINKS: Hochschul-Leaderboard */}
+    <aside className="col-span-12 md:col-span-3">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="text-sm font-extrabold text-slate-900">
+          🏫 Hochschulen
+        </div>
+        <div className="mt-3 space-y-2 text-sm text-slate-700">
+          <div className="flex justify-between">
+            <span>1. Uni A</span>
+            <span className="font-semibold text-slate-500">4.6</span>
+          </div>
+          <div className="flex justify-between">
+            <span>2. Uni B</span>
+            <span className="font-semibold text-slate-500">4.4</span>
+          </div>
+          <div className="flex justify-between">
+            <span>3. Uni C</span>
+            <span className="font-semibold text-slate-500">4.2</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    {/* MITTE: Euer bisheriger Content */}
+    <main className="col-span-12 md:col-span-6">{children}</main>
+
+    {/* RECHTS: Professoren-Leaderboard */}
+    <aside className="col-span-12 md:col-span-3">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="text-sm font-extrabold text-slate-900">
+          👨‍🏫 Professor:innen
+        </div>
+        <div className="mt-3 space-y-2 text-sm text-slate-700">
+          <div className="flex justify-between">
+            <span>1. Prof. X</span>
+            <span className="font-semibold text-slate-500">4.9</span>
+          </div>
+          <div className="flex justify-between">
+            <span>2. Prof. Y</span>
+            <span className="font-semibold text-slate-500">4.7</span>
+          </div>
+          <div className="flex justify-between">
+            <span>3. Prof. Z</span>
+            <span className="font-semibold text-slate-500">4.6</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
 
         <Footer />
       </body>
