@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { sessionCookie, verifySession } from "@/lib/auth";
 import RatingForm from "./RatingForm";
 import RatingDeleteButton from "./RatingDeleteButton";
+import RatingStars from "@/app/components/RatingStars";
 
 export default async function ProfessorPage({
   params,
@@ -12,7 +13,7 @@ export default async function ProfessorPage({
 }) {
   const { id } = await params;
 
-  // Wer bin ich? (optional)
+  // Wer bin ich?
   const cookieStore = await cookies();
   const token = cookieStore.get(sessionCookie.name)?.value;
 
@@ -28,21 +29,47 @@ export default async function ProfessorPage({
 
   const prof = await prisma.professor.findUnique({
     where: { id },
-    select: { id: true, name: true, department: true, school: true },
+    select: {
+      id: true,
+      name: true,
+      courses: {
+        select: {
+          course: {
+            select: {
+              id: true,
+              name: true,
+              school: { select: { id: true, name: true } },
+            },
+          },
+        },
+      },
+    },
   });
 
   if (!prof) {
     return (
-      <main style={{ maxWidth: 900, margin: "40px auto", padding: 16 }}>
-        <Link href="/" style={{ opacity: 0.8 }}>
+      <main className="mx-auto max-w-3xl px-6 py-10">
+        <Link className="text-sm underline" href="/professoren">
           ← Zurück
         </Link>
-        <h1 style={{ fontSize: 24, fontWeight: 800, marginTop: 12 }}>
-          Professor nicht gefunden
-        </h1>
+        <h1 className="mt-3 text-2xl font-extrabold">Professor nicht gefunden</h1>
       </main>
     );
   }
+
+  // Kurse für Anzeige & fürs RatingForm (courseId selection)
+  const courseList = prof.courses.map((pc) => pc.course);
+  const coursesForForm = courseList.map((c) => ({
+    id: c.id,
+    name: c.name,
+    schoolName: c.school.name,
+  }));
+  const hasCourses = coursesForForm.length > 0;
+
+  // Unique Schools
+  const schoolMap = new Map<string, { id: string; name: string }>();
+  for (const c of courseList) schoolMap.set(c.school.id, c.school);
+  const schools = Array.from(schoolMap.values());
 
   const ratings = await prisma.rating.findMany({
     where: { professorId: prof.id },
@@ -53,7 +80,9 @@ export default async function ProfessorPage({
       stars: true,
       comment: true,
       createdAt: true,
-      user: { select: { email: true } },
+      updatedAt: true,
+      firstCreatedAt: true,
+      course: { select: { id: true, name: true } },
     },
   });
 
@@ -63,75 +92,146 @@ export default async function ProfessorPage({
       : ratings.reduce((s, r) => s + r.stars, 0) / ratings.length;
 
   return (
-    <main style={{ maxWidth: 900, margin: "40px auto", padding: 16 }}>
-      <Link href="/" style={{ opacity: 0.8 }}>
+    <main className="mx-auto max-w-3xl px-6 py-10">
+      <Link className="text-sm underline" href="/professoren">
         ← Zurück
       </Link>
 
-      <h1 style={{ fontSize: 28, fontWeight: 800, marginTop: 12 }}>
-        {prof.name}
-      </h1>
-      <p style={{ marginTop: 6, opacity: 0.8 }}>
-        {prof.department} • {prof.school}
-      </p>
+      <h1 className="mt-3 text-3xl font-extrabold text-slate-900">{prof.name}</h1>
 
-      <div style={{ marginTop: 14, opacity: 0.85 }}>
-        {avg === null ? "Noch keine Bewertungen." : `Ø ${avg.toFixed(1)} / 5 (${ratings.length})`}
-      </div>
+      <div className="mt-2 space-y-1 text-slate-600">
+        {/* Schools */}
+        <div className="text-sm">
+          <span className="font-semibold">Universität/Hochschule:</span>{" "}
+          {schools.length > 0 ? (
+            schools.map((s, i) => (
+              <span key={s.id}>
+                <Link className="underline" href={`/hochschule/${s.id}`}>
+                  {s.name}
+                </Link>
+                {i < schools.length - 1 ? ", " : ""}
+              </span>
+            ))
+          ) : (
+            <span className="text-slate-500">—</span>
+          )}
+        </div>
 
-      <div
-        style={{
-          marginTop: 18,
-          border: "1px solid #eee",
-          borderRadius: 12,
-          padding: 14,
-        }}
-      >
-        <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800 }}>
-          Bewertung abgeben
-        </h2>
-        <p style={{ marginTop: 6, opacity: 0.75 }}>(Du musst eingeloggt sein.)</p>
-        <div style={{ marginTop: 10 }}>
-          <RatingForm professorId={prof.id} />
+        {/* Courses */}
+        <div className="text-sm">
+          <span className="font-semibold">Kurse:</span>{" "}
+          {courseList.length > 0 ? (
+            courseList.map((c, i) => (
+              <span key={c.id} className="text-slate-700">
+                {c.name}
+                {i < courseList.length - 1 ? " • " : ""}
+              </span>
+            ))
+          ) : (
+            <span className="text-slate-500">—</span>
+          )}
         </div>
       </div>
 
-      <h2 style={{ marginTop: 22, fontSize: 18, fontWeight: 800 }}>
-        Bewertungen
-      </h2>
+      <div className="mt-4 text-sm text-slate-700">
+        {avg === null ? (
+          "Noch keine Bewertungen."
+        ) : (
+          <div className="flex items-center gap-2">
+            <RatingStars value={avg} />
+            <span className="font-semibold">{avg.toFixed(1)}</span>
+            <span className="text-slate-500">({ratings.length})</span>
+          </div>
+        )}
+      </div>
+
+      {/* ✅ Bewertung abgeben: nur wenn Kurse existieren */}
+      {!hasCourses ? (
+        <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="text-lg font-extrabold text-slate-900">
+            Noch kein Kurs hinterlegt
+          </div>
+          <p className="mt-1 text-sm text-slate-600">
+            Du musst erst einen Kurs anlegen, damit man den Professor pro Kurs bewerten kann.
+          </p>
+
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <Link
+              className="inline-flex rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+              href={`/kurs-neu?profId=${prof.id}`}
+            >
+              + Kurs hinzufügen
+            </Link>
+
+            <span className="text-xs text-slate-500">
+              Danach kannst du den Kurs im Bewertungsformular auswählen.
+            </span>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 className="text-lg font-extrabold">Bewertung abgeben</h2>
+          <p className="mt-1 text-sm text-slate-600">(Du musst eingeloggt sein.)</p>
+          <div className="mt-4">
+            {/* ✅ WICHTIG: courses prop */}
+            <RatingForm professorId={prof.id} courses={coursesForForm} />
+          </div>
+        </div>
+      )}
+
+      <h2 className="mt-8 text-lg font-extrabold">Bewertungen</h2>
 
       {ratings.length === 0 ? (
-        <p style={{ marginTop: 10, opacity: 0.75 }}>Noch keine Bewertungen.</p>
+        <p className="mt-3 text-slate-600">Noch keine Bewertungen.</p>
       ) : (
-        <ul style={{ marginTop: 10, display: "grid", gap: 10, paddingLeft: 0 }}>
-          {ratings.map((r) => (
-            <li
-              key={r.id}
-              style={{
-                listStyle: "none",
-                border: "1px solid #eee",
-                borderRadius: 12,
-                padding: 12,
-              }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
-                <div style={{ fontWeight: 800 }}>
-                  {"★".repeat(r.stars)}
-                  {"☆".repeat(5 - r.stars)}
+        <ul className="mt-4 space-y-3">
+          {ratings.map((r) => {
+            const originallyAt = r.firstCreatedAt ?? r.createdAt;
+            const wasEdited =
+              r.firstCreatedAt != null &&
+              r.updatedAt != null &&
+              r.updatedAt.getTime() !== originallyAt.getTime();
+
+            return (
+              <li
+                key={r.id}
+                className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1">
+                    <div className="text-lg">
+                      <RatingStars value={r.stars} />
+                    </div>
+                    <div className="text-xs text-slate-500">
+                      Kurs: <span className="text-slate-700">{r.course.name}</span>
+                    </div>
+                  </div>
+
+                  {viewerUserId && viewerUserId === r.userId ? (
+                    <div className="flex items-center gap-2">
+                      {/* Edit Button kommt als nächstes */}
+                      <RatingDeleteButton ratingId={r.id} />
+                    </div>
+                  ) : null}
                 </div>
 
-                {viewerUserId && viewerUserId === r.userId ? (
-                  <RatingDeleteButton ratingId={r.id} />
-                ) : null}
-              </div>
+                <div className="mt-2 text-slate-800">{r.comment}</div>
 
-              <div style={{ marginTop: 6, opacity: 0.9 }}>{r.comment}</div>
-
-              <div style={{ marginTop: 8, fontSize: 12, opacity: 0.6 }}>
-                von {r.user.email} • {new Date(r.createdAt).toLocaleString("de-DE")}
-              </div>
-            </li>
-          ))}
+                <div className="mt-2 text-xs text-slate-500">
+                  {wasEdited ? (
+                    <>
+                      Ursprünglich bewertet am:{" "}
+                      {new Date(originallyAt).toLocaleString("de-DE")}
+                      <br />
+                      Geändert am: {new Date(r.updatedAt!).toLocaleString("de-DE")}
+                    </>
+                  ) : (
+                    <>{new Date(r.createdAt).toLocaleString("de-DE")}</>
+                  )}
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
     </main>
