@@ -23,6 +23,64 @@ export default async function Home({
     select: { id: true, name: true, department: true, school: true },
   });
 
+  const professorRatings = await prisma.rating.groupBy({
+    by: ["professorId"],
+    _avg: { stars: true },
+    _count: { stars: true },
+  });
+
+  const leaderboardProfessorIds = professorRatings.map(
+    (entry) => entry.professorId
+  );
+  const leaderboardProfessors = leaderboardProfessorIds.length
+    ? await prisma.professor.findMany({
+        where: { id: { in: leaderboardProfessorIds } },
+        select: { id: true, name: true, school: true },
+      })
+    : [];
+  const leaderboardProfessorMap = new Map(
+    leaderboardProfessors.map((prof) => [prof.id, prof])
+  );
+
+  const professorLeaderboard = professorRatings
+    .map((entry) => {
+      const prof = leaderboardProfessorMap.get(entry.professorId);
+      if (!prof) return null;
+      return {
+        id: prof.id,
+        name: prof.name,
+        school: prof.school,
+        avg: entry._avg.stars ?? 0,
+        count: entry._count.stars,
+      };
+    })
+    .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))
+    .sort((a, b) => {
+      if (b.avg !== a.avg) return b.avg - a.avg;
+      return b.count - a.count;
+    });
+
+  const topProfessors = professorLeaderboard.slice(0, 5);
+
+  const universityMap = new Map<string, { total: number; count: number }>();
+  for (const entry of professorLeaderboard) {
+    const current = universityMap.get(entry.school) ?? {
+      total: 0,
+      count: 0,
+    };
+    current.total += entry.avg;
+    current.count += 1;
+    universityMap.set(entry.school, current);
+  }
+  const universityLeaderboard = Array.from(universityMap.entries())
+    .map(([school, stats]) => ({
+      school,
+      avg: stats.count ? stats.total / stats.count : 0,
+      count: stats.count,
+    }))
+    .sort((a, b) => b.avg - a.avg)
+    .slice(0, 5);
+
   return (
     <main className="py-10">
       <section className="mx-auto flex max-w-4xl flex-col items-center text-center">
@@ -67,6 +125,91 @@ export default async function Home({
             Wir nutzen den Login nur, um Spam zu verhindern. Auf der Seite zeigen
             wir nicht, von wem eine Bewertung stammt.
           </div>
+        </div>
+      </section>
+
+      <section className="mt-12 grid gap-6 lg:grid-cols-2">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 className="text-lg font-extrabold text-slate-900">
+            Leaderboard Hochschulen &amp; Universitäten
+          </h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Durchschnitt aller Professor:innen-Bewertungen pro Hochschule.
+          </p>
+          {universityLeaderboard.length === 0 ? (
+            <div className="mt-4 text-sm text-slate-500">
+              Noch keine Bewertungen vorhanden.
+            </div>
+          ) : (
+            <ol className="mt-4 space-y-3">
+              {universityLeaderboard.map((entry, index) => (
+                <li
+                  key={entry.school}
+                  className="flex items-center justify-between gap-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-700">
+                      {index + 1}
+                    </span>
+                    <div>
+                      <div className="font-semibold text-slate-900">
+                        {entry.school}
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        {entry.count} Professor:innen
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-sm font-semibold text-slate-900">
+                    Ø {entry.avg.toFixed(1)} / 5
+                  </div>
+                </li>
+              ))}
+            </ol>
+          )}
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 className="text-lg font-extrabold text-slate-900">
+            Leaderboard Professor:innen
+          </h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Insgesamt bestbewertete Professor:innen (hochschulübergreifend).
+          </p>
+          {topProfessors.length === 0 ? (
+            <div className="mt-4 text-sm text-slate-500">
+              Noch keine Bewertungen vorhanden.
+            </div>
+          ) : (
+            <ol className="mt-4 space-y-3">
+              {topProfessors.map((entry, index) => (
+                <li
+                  key={entry.id}
+                  className="flex items-center justify-between gap-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-700">
+                      {index + 1}
+                    </span>
+                    <div>
+                      <Link
+                        href={`/professor/${entry.id}`}
+                        className="font-semibold text-slate-900 hover:underline"
+                      >
+                        {entry.name}
+                      </Link>
+                      <div className="text-xs text-slate-500">
+                        {entry.school} · {entry.count} Bewertungen
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-sm font-semibold text-slate-900">
+                    Ø {entry.avg.toFixed(1)} / 5
+                  </div>
+                </li>
+              ))}
+            </ol>
+          )}
         </div>
       </section>
 

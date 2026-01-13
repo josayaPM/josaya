@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { prisma } from "@/lib/prisma";
 import { sessionCookie, verifySession } from "@/lib/auth";
 
 export default async function NachrichtenPage() {

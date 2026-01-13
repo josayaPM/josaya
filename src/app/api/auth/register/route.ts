@@ -30,8 +30,9 @@ export async function POST(req: Request) {
       maxAge: 60 * 60 * 24 * 7,
     });
     return res;
-  } catch (e: any) {
-    if (e?.code === "P2002") {
+  } catch (error: unknown) {
+    const prismaError = error as { code?: string } | null;
+    if (prismaError?.code === "P2002") {
       return NextResponse.json(
         { error: "Email ist schon registriert." },
         { status: 409 }

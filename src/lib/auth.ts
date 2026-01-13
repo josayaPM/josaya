@@ -5,7 +5,12 @@ const COOKIE_NAME = "campusbuddy_session";
 
 function getSecret() {
   const s = process.env.JWT_SECRET;
-  if (!s) throw new Error("JWT_SECRET fehlt in .env");
+  if (!s) {
+    if (process.env.NODE_ENV !== "production") {
+      return new TextEncoder().encode("dev-secret-change-me");
+    }
+    throw new Error("JWT_SECRET fehlt in .env");
+  }
   return new TextEncoder().encode(s);
 }
 
