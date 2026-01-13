@@ -1,22 +1,30 @@
+// src/app/professor-neu/page.tsx
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function ProfessorNeuPage() {
   const router = useRouter();
+
   const [name, setName] = useState("");
-  const [department, setDepartment] = useState("");
-  const [school, setSchool] = useState("");
+  const [departmentName, setDepartmentName] = useState("");
+  const [schoolName, setSchoolName] = useState("");
+
   const [msg, setMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  async function submit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setMsg(null);
 
-    if (!name.trim() || !department.trim() || !school.trim()) {
-      setMsg("Bitte alle Felder ausfüllen.");
+    const n = name.trim();
+    const d = departmentName.trim();
+    const s = schoolName.trim();
+
+    if (!n || !d || !s) {
+      setMsg("Bitte Name, Fachbereich und Hochschule ausfüllen.");
       return;
     }
 
@@ -24,64 +32,71 @@ export default function ProfessorNeuPage() {
     const res = await fetch("/api/professors", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, department, school }),
+      body: JSON.stringify({ name: n, departmentName: d, schoolName: s }),
     });
+
     const data = await res.json().catch(() => ({}));
     setLoading(false);
 
     if (!res.ok) {
-      setMsg(data?.error ?? "Fehler");
+      setMsg(data?.error ?? `Fehler beim Speichern (Status ${res.status})`);
       return;
     }
 
-    // Weiterleitung zur neuen Professor-Seite
-    router.push(`/professor/${data.prof.id}`);
+    // Erfolg
+    const id = data?.prof?.id as string | undefined;
+    if (id) router.push(`/professor/${id}`);
+    else router.push("/professoren");
     router.refresh();
   }
 
   return (
-    <main style={{ maxWidth: 520, margin: "40px auto", padding: 16 }}>
-      <h1 style={{ fontSize: 26, fontWeight: 800 }}>Professor hinzufügen</h1>
+    <main className="mx-auto max-w-3xl px-6 py-10">
+      <Link className="text-sm underline" href="/professoren">
+        ← Zurück
+      </Link>
 
-      <form onSubmit={submit} style={{ marginTop: 16, display: "grid", gap: 10 }}>
+      <h1 className="mt-4 text-4xl font-extrabold text-slate-900">
+        Professor hinzufügen
+      </h1>
+
+      <form onSubmit={onSubmit} className="mt-8 grid gap-5">
         <input
-          placeholder="Name (z.B. Prof. Mustermann)"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          style={{ padding: 12, border: "1px solid #ccc", borderRadius: 10 }}
+          placeholder="Name (z.B. Prof. Mustermann)"
+          className="w-full rounded-2xl border border-slate-200 bg-white px-5 py-4 text-lg shadow-sm outline-none"
         />
+
         <input
+          value={departmentName}
+          onChange={(e) => setDepartmentName(e.target.value)}
           placeholder="Fachbereich (z.B. Informatik)"
-          value={department}
-          onChange={(e) => setDepartment(e.target.value)}
-          style={{ padding: 12, border: "1px solid #ccc", borderRadius: 10 }}
+          className="w-full rounded-2xl border border-slate-200 bg-white px-5 py-4 text-lg shadow-sm outline-none"
         />
+
         <input
-          placeholder="Hochschule (z.B. TU Berlin)"
-          value={school}
-          onChange={(e) => setSchool(e.target.value)}
-          style={{ padding: 12, border: "1px solid #ccc", borderRadius: 10 }}
+          value={schoolName}
+          onChange={(e) => setSchoolName(e.target.value)}
+          placeholder="Hochschule / Universität (z.B. TU Berlin)"
+          className="w-full rounded-2xl border border-slate-200 bg-white px-5 py-4 text-lg shadow-sm outline-none"
         />
 
         <button
           disabled={loading}
-          style={{
-            padding: 12,
-            borderRadius: 10,
-            border: "1px solid #111",
-            fontWeight: 700,
-            cursor: "pointer",
-          }}
+          className="mt-2 rounded-2xl border border-slate-900 bg-white px-5 py-4 text-lg font-extrabold shadow-sm hover:bg-slate-50 disabled:opacity-60"
         >
-          {loading ? "..." : "Speichern"}
+          {loading ? "Speichern..." : "Speichern"}
         </button>
+
+        {msg ? (
+          <div className={`text-sm font-semibold ${msg.includes("✅") ? "text-green-600" : "text-red-600"}`}>
+            {msg}
+          </div>
+        ) : null}
+
+        <div className="text-sm text-slate-600">Hinweis: Du musst eingeloggt sein.</div>
       </form>
-
-      {msg && <p style={{ marginTop: 12, color: "crimson" }}>{msg}</p>}
-
-      <p style={{ marginTop: 14, fontSize: 13, opacity: 0.7 }}>
-        Hinweis: Du musst eingeloggt sein.
-      </p>
     </main>
   );
 }
