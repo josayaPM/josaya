@@ -1,67 +1,68 @@
-diff --git a/prisma/schema.prisma b/prisma/schema.prisma
-index deb64ba89be846acf667148834eaf05b6c75ff72..1c3b728a9c913f55710c8da9a184ff35fc5e9a7e 100644
---- a/prisma/schema.prisma
-+++ b/prisma/schema.prisma
-@@ -1,32 +1,32 @@
- generator client {
-   provider = "prisma-client-js"
- }
- 
- datasource db {
-   provider = "sqlite"
--  url      = env("DATABASE_URL")
-+  url      = "file:./dev.db"
- }
- 
- model User {
-   id           String   @id @default(cuid())
-   email        String   @unique
-   passwordHash String
-   createdAt    DateTime @default(now())
-   ratings      Rating[]
-   notifications Notification[]
- }
- 
- model Professor {
-   id         String   @id @default(cuid())
-   name       String
-   department String
-   school     String
-   createdAt  DateTime @default(now())
-   ratings    Rating[]
-   courses Course[]
- }
- 
- model Rating {
-   id          String   @id @default(cuid())
-   stars       Int
-   comment     String
-@@ -43,26 +43,26 @@ model Rating {
- }
- model Notification {
-   id        String   @id @default(cuid())
-   userId    String
-   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
-   title     String
-   body      String?
-   href      String?
- 
-   readAt    DateTime?
-   createdAt DateTime @default(now())
- 
-   @@index([userId, createdAt])
- }
- model Course {
-   id          String   @id @default(cuid())
-   name        String
-   code        String?
-   createdAt   DateTime @default(now())
- 
-   professorId String
-   professor   Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
- 
-   @@index([professorId])
--}
-\ No newline at end of file
-+}
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  ratings      Rating[]
+  notifications Notification[]
+}
+
+model Professor {
+  id         String   @id @default(cuid())
+  name       String
+  department String
+  school     String
+  createdAt  DateTime @default(now())
+  ratings    Rating[]
+  courses Course[]
+}
+
+model Rating {
+  id          String   @id @default(cuid())
+  stars       Int
+  comment     String
+  createdAt   DateTime @default(now())
+
+  userId      String
+  professorId String
+
+  user        User      @relation(fields: [userId], references: [id])
+  professor   Professor @relation(fields: [professorId], references: [id])
+
+  @@index([professorId])
+  @@index([userId])
+}
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title     String
+  body      String?
+  href      String?
+
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+model Course {
+  id          String   @id @default(cuid())
+  name        String
+  code        String?
+  createdAt   DateTime @default(now())
+
+  professorId String
+  professor   Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
+
+  @@index([professorId])
+}
